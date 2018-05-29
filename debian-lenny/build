@@ -6,10 +6,9 @@ cd "$(dirname "$0")"
 say() { echo "$@" >&2; }
 say_do() { say "$@"; "$@"; }
 
-builder="$(docker build -q debootstrap)"
+say_do sudo rm -rf rootfs
 
-docker run "$builder" bash -euc '
-    debootstrap --no-check-gpg --arch=i386 --foreign \
-        lenny newroot http://debian.snt.utwente.nl/debian-archive/debian >&2
-    tar c -C newroot .
-' | docker import - kiboit/debian-lenny
+say_do sudo debootstrap --no-check-gpg --arch=i386 --variant=minbase \
+    lenny rootfs http://debian.snt.utwente.nl/debian-archive/debian
+
+say_do sudo tar c -C rootfs . | pv -N import | docker import - kiboit/debian-lenny
