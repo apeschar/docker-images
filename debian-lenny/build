@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -euo pipefail
+cd "$(dirname "$0")"
+
+say() { echo "$@" >&2; }
+say_do() { say "$@"; "$@"; }
+
+builder="$(docker build -q debootstrap)"
+
+docker run "$builder" bash -euc '
+    debootstrap --no-check-gpg --arch=i386 --foreign \
+        lenny newroot http://debian.snt.utwente.nl/debian-archive/debian >&2
+    tar c -C newroot .
+' | docker import - kiboit/debian-lenny
